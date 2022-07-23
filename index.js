@@ -1,6 +1,8 @@
 const puppeteer = require('puppeteer')
 require('dotenv').config();
 const Schedule = require('node-schedule');
+const express = require('express');
+const PORT = process.env.PORT || 5000
 
 // const rule = new Schedule.RecurrenceRule();
 // rule.minute = 1;
@@ -8,9 +10,15 @@ const Schedule = require('node-schedule');
 // const job = Schedule.scheduleJob("* /1 * * * *", () => {
 // console.log("olá mundo");
 // });
+const server = express()
+
+server.all('/', (req,res)=>{
+    res.send("Bot está online")
+})
 
 
-(async () => {
+
+async function GetInfo(){
     const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.goto('https://ava.uft.edu.br/palmas/login/index.php');
@@ -29,11 +37,19 @@ const Schedule = require('node-schedule');
             datas.push({ "data": b.innerText })
         })
         document.querySelectorAll(".border-bottom.pb-2 > div > div > div > div > a > h6").forEach((b) => {
-
+            
             titles.push({ "title": b.innerText.replace('está marcado(a) para esta data', ':') })
         })
         return { titles, datas }
     })
+    await page.goto('https://ava.uft.edu.br/palmas/login/index.php');
+    await Promise.all([
+        page.click("button[type=submit]"),
+        page.waitForNavigation()
+    ]);
+    console.log({titles,datas})
     await browser.close();
-})();
+}
 
+GetInfo()
+server.listen(PORT)
