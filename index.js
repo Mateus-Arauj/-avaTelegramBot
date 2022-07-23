@@ -8,10 +8,8 @@ const bot = new Telegraf(process.env.TOKEN)
 const server = express()
 
 server.all('/', (req,res)=>{
-    res.send("Bot está online")
+    res.send("The bot is online")
 })
-
-
 
 async function GetInfo(){
     const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
@@ -36,13 +34,17 @@ async function GetInfo(){
         })
         return { titles, datas }
     })
-    await page.goto('https://ava.uft.edu.br/palmas/login/index.php');
+
+    //Logging out of the site
+    await page.goto('https://ava.uft.edu.br/palmas/login/logout.php');
     await Promise.all([
         page.click("button[type=submit]"),
         page.waitForNavigation()
     ]);
     await browser.close();
-    list = ''
+
+    //Save the data in a list
+    let list = ''
     datas.forEach((t,index)=>{
         list += `Data: ${t.data}\nDescrição: ${titles[index].title}\n\n`
     })
@@ -54,16 +56,12 @@ bot.start(content => {
 
     console.log(from)
     content.reply(`Muito bem-vindo, ${from.first_name}!`)
-    content.reply("As atividades serão enviadas todo dia a partir das 08h, envie 'registrar' para começar:")
+    content.reply("As atividades serão enviadas todo dia a partir das 08h, envie '/registrar' para começar:")
 })
-bot.command("registrar", (content, next)=>{
-   //console.log(content.update.message)
-   
-    console.log(content)
-
+bot.command("registrar", (content)=>{
+    //Wait for the schedule to run the script
     const job = Schedule.scheduleJob(`00 ${process.env.minutos} ${process.env.hora} * * 0-6`, () => {
         GetInfo().then(r => content.telegram.sendMessage(content.message.chat.id, r))
-        // content.telegram.sendMessage(content.message.chat.id, r
     });
  
 }
