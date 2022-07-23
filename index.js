@@ -11,7 +11,7 @@ const Schedule = require('node-schedule');
 
 
 (async () => {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     const page = await browser.newPage();
     await page.goto('https://ava.uft.edu.br/palmas/login/index.php');
     await page.type('#username', process.env.LOGIN);
